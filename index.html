@@ -1,0 +1,455 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Benzol – Interaktives Arbeitsblatt (Q2, G-Kurs)</title>
+<style>
+  :root{
+    --c1:#0d47a1; /* blau */
+    --c2:#1976d2;
+    --ok:#2e7d32;
+    --bad:#c62828;
+    --hint:#6d4c41;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    margin:0; background:#f5f7fb; color:#111;
+  }
+  header{
+    background:linear-gradient(90deg,var(--c1),var(--c2));
+    color:#fff; padding:18px 16px;
+  }
+  header h1{margin:0 0 6px 0; font-size:1.25rem}
+  header p{margin:0; opacity:.95}
+  main{padding:16px; max-width:980px; margin:auto}
+  .card{
+    background:#fff; border-radius:14px; padding:16px; margin:12px 0;
+    box-shadow:0 4px 14px rgba(0,0,0,.06);
+  }
+  h2{font-size:1.1rem; margin:0 0 8px 0; color:var(--c1)}
+  .task-title{display:flex; gap:8px; align-items:center; margin-bottom:6px}
+  .badge{
+    background:#e3f2fd; color:var(--c1); padding:4px 10px; border-radius:999px; font-weight:600; font-size:.85rem
+  }
+  button{
+    padding:10px 14px; border-radius:10px; border:0; background:var(--c2); color:#fff; font-weight:600;
+    margin:8px 8px 0 0; cursor:pointer
+  }
+  button.secondary{background:#eceff1; color:#222}
+  button.flat{background:transparent; color:var(--c2); padding:6px 8px}
+  button.ok{background:var(--ok)} button.bad{background:var(--bad)}
+  .result{margin-top:8px; font-weight:700}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .muted{color:#555}
+  .hint{background:#fff7e6; border-left:4px solid var(--hint); padding:10px; border-radius:8px; margin-top:8px; display:none}
+  /* Multiple Choice */
+  .mc-item{display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid #e0e0e0; border-radius:10px; margin:8px 0}
+  .mc-item input{width:20px; height:20px; margin-top:2px}
+  /* Tip-Match (klick-zuordnen) */
+  .match{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;
+  }
+  .pill{
+    border:1.5px solid #cfd8dc; padding:10px; border-radius:999px; background:#fafafa; cursor:pointer; text-align:center;
+    user-select:none;
+  }
+  .pill.active{border-color:var(--c2); background:#e3f2fd}
+  .pair{font-size:.95rem; padding:6px 0}
+  /* Lückentext */
+  .gap{min-width:120px; display:inline-block; border-bottom:2px dotted #78909c; padding:2px 4px}
+  input[type=text].gapin{width:min(260px,70vw); padding:8px; border:1px solid #cfd8dc; border-radius:8px; margin:6px 0}
+  /* Footer controls */
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; align-items:center}
+  .small{font-size:.9rem}
+  .progress{height:10px; background:#e3f2fd; border-radius:999px; overflow:hidden}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg,var(--c1),var(--c2))}
+  details summary{cursor:pointer; font-weight:700; color:#333}
+  .key{background:#f1f8e9; border:1px solid #c5e1a5; padding:10px; border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Benzol – Interaktives Arbeitsblatt (Q2, G-Kurs)</h1>
+  <p>Kurz, klar, klickbar. Lies die Info-Seiten (Bild&nbsp;1 & Bild&nbsp;2) und bearbeite die Aufgaben.</p>
+</header>
+
+<main>
+
+  <!-- Hinweis: Info-Abbildungen optional -->
+  <div class="card small" aria-live="polite">
+    <strong>Material:</strong> Schulbuchseiten <em>„Benzol – Begründer einer neuen Stoffklasse“</em> (Bild 1 & Bild 2).  
+    <button class="flat" id="btnFacts">Kurzfakten einblenden</button>
+    <div class="hint" id="facts">
+      <ul>
+        <li>Molekülformel Benzol: <b>C₆H₆</b>; Verhältnis C : H = 1 : 1.</li>
+        <li>Bromwasser: Benzol <b>entfärbt nicht</b> ohne Katalysator; Cyclohexen <b>entfärbt schnell</b>.</li>
+        <li>Kekulé-Modell: Ring mit <i>wechselnden</i> Doppelbindungen; erklärt jedoch nicht alle Befunde (keine Addition, keine Isomerentrennung wie erwartet).</li>
+        <li>Reale Bindungen im Ring sind <b>gleich lang</b> → delokalisierte π-Elektronen (Resonanz).</li>
+        <li>Gewinnung: z. B. katalytisches Reformieren (aus Alkanen: Hexan → Benzol + Wasserstoff).</li>
+        <li>Gefahrstoff: giftig, lipophil, krebserzeugend; löst Fette und viele unpolare Stoffe.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="card">
+    <div class="task-title"><span class="badge">Fortschritt</span><h2>Wie weit bist du?</h2></div>
+    <div class="progress" aria-label="Bearbeitungsfortschritt">
+      <div class="bar" id="progressBar"></div>
+    </div>
+    <p class="small muted" id="progressText">0 von 7 Aufgaben bestanden.</p>
+  </div>
+
+  <!-- A1: Verständnis-Check MC -->
+  <section class="card" data-task="a1">
+    <div class="task-title"><span class="badge">A1</span><h2>Grundlagen aus dem Text (Multiple Choice)</h2></div>
+    <p>Wähle die <b>richtigen</b> Aussagen.</p>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Benzol brennt mit <b>rußender</b> Flamme, das deutet auf hohen Kohlenstoffanteil hin.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="f">
+      <span>Benzol entfärbt Bromwasser immer schnell – auch ohne Katalysator.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Die Molekülformel C₆H₆ lässt eine <b>ungesättigte</b> Verbindung vermuten.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Im Kekulé-Modell wechseln Einfach- und Doppelbindungen ab.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="f">
+      <span>Benzol ist in Wasser gut löslich.</span></label>
+    <div>
+      <button class="check">Prüfen</button>
+      <button class="secondary hintbtn">Hinweis</button>
+      <div class="hint">Vergleiche Bild 2, Abb. „Bromwasser“ und den Steckbrief: Löslichkeit, Flammenbild, Reaktivität.</div>
+      <div class="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- A2: Tip-Match Zuordnen -->
+  <section class="card" data-task="a2">
+    <div class="task-title"><span class="badge">A2</span><h2>Zuordnen: Stoff – Verhalten mit Brom</h2></div>
+    <p>Tippe nacheinander die passende <b>Kombination</b> aus linker und rechter Spalte. (Nochmal tippen = abwählen.)</p>
+    <div class="match" role="group" aria-label="Zuordnung">
+      <div>
+        <div class="pill" data-left="benzol">Benzol (C₆H₆)</div>
+        <div class="pill" data-left="cyclohexan">Cyclohexan (C₆H₁₂)</div>
+        <div class="pill" data-left="cyclohexen">Cyclohexen (C₆H₁₀)</div>
+      </div>
+      <div>
+        <div class="pill" data-right="a">Brom entfärbt <b>schnell</b> (Additionsreaktion)</div>
+        <div class="pill" data-right="b">Keine schnelle Entfärbung ohne Katalysator</div>
+        <div class="pill" data-right="c">Reaktion nur unter radikalen Bedingungen (Substitution)</div>
+      </div>
+    </div>
+    <div class="small muted">Zielpaare (aus dem Text ablesbar): Benzol → b, Cyclohexen → a, Cyclohexan → c.</div>
+    <div id="pairsA2" class="small"></div>
+    <button class="check">Prüfen</button>
+    <button class="secondary hintbtn">Hinweis</button>
+    <div class="hint">Sieh dir Bild 1, Abb. 2 (Bromwasser) und die Beschreibung zu Alkan/Alken/Aromat an.</div>
+    <div class="result" aria-live="polite"></div>
+  </section>
+
+  <!-- A3: Kekulé vs. Realität (MC) -->
+  <section class="card" data-task="a3">
+    <div class="task-title"><span class="badge">A3</span><h2>Kekulé-Formel – was passt, was nicht?</h2></div>
+    <p>Markiere die korrekten Aussagen.</p>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Kekulé erklärt die Ringform mit abwechselnden Doppelbindungen.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Die echte Struktur zeigt <b>gleich lange</b> C–C-Bindungen.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="f">
+      <span>Aus der Kekulé-Formel folgt: Brom addiert <b>sofort</b> an Benzol.</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>Die reale Erklärung nutzt <b>delokalisierte π-Elektronen</b> (Resonanz).</span></label>
+    <div>
+      <button class="check">Prüfen</button>
+      <button class="secondary hintbtn">Hinweis</button>
+      <div class="hint">Im Text steht, dass die Experimente (Brom, Isomerenzahl) gegen einfache Alkendoppelbindungen sprechen.</div>
+      <div class="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- A4: 1,2-Dimethylbenzol Isomere -->
+  <section class="card" data-task="a4">
+    <div class="task-title"><span class="badge">A4</span><h2>Isomerie: 1,2-Dimethylbenzol (o-Xylol)</h2></div>
+    <p>Im Text wird die Frage nach der Zahl der Isomere diskutiert. <b>Wie viele</b> verschiedene 1,2-Dimethylbenzol-Isomere erwartet man, wenn Doppelbindungen feststehen? Und wie ist es in der Realität?</p>
+    <div>
+      <label>Erwartung aus „starren“ Doppelbindungen (Kekulé):<br>
+        <input class="gapin" type="text" placeholder="Zahl eingeben (Wort oder Ziffer)"></label>
+    </div>
+    <div>
+      <label>Tatsächlich beobachtet (reale Struktur):<br>
+        <input class="gapin" type="text" placeholder="Zahl eingeben (Wort oder Ziffer)"></label>
+    </div>
+    <button class="check">Prüfen</button>
+    <button class="secondary hintbtn">Hinweis</button>
+    <div class="hint">Der Text sagt: Es gibt nur <b>ein</b> 1,2-Dimethylbenzol, weil alle C–C-Bindungen im Ring gleichwertig sind.</div>
+    <div class="result" aria-live="polite"></div>
+  </section>
+
+  <!-- A5: Sicherheit & Eigenschaften (MC) -->
+  <section class="card" data-task="a5">
+    <div class="task-title"><span class="badge">A5</span><h2>Steckbrief: Sicherheit & Eigenschaften</h2></div>
+    <p>Was trifft auf Benzol zu? (Mehrfachauswahl)</p>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>giftig, krebserzeugend, lipophil</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>in Wasser unlöslich, mit Ethanol/Benzin mischbar</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="f">
+      <span>geringe Oktanzahl; für Kraftstoffe ungeeignet</span></label>
+    <label class="mc-item"><input type="checkbox" data-key="t">
+      <span>charakteristischer Geruch; stark lichtbrechend</span></label>
+    <div>
+      <button class="check">Prüfen</button>
+      <button class="secondary hintbtn">Hinweis</button>
+      <div class="hint">Sieh „Steckbrief: Benzol“ (Bild 1) und „Verwendung“ (Bild 2).</div>
+      <div class="result" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- A6: Reaktionsschema Reformieren -->
+  <section class="card" data-task="a6">
+    <div class="task-title"><span class="badge">A6</span><h2>Gewinnung: katalytisches Reformieren</h2></div>
+    <p>Vervollständige die vereinfachte Gleichung (Stoffmengenverhältnis):</p>
+    <p class="small">Hexan → Benzol + ?</p>
+    <input class="gapin" type="text" placeholder="Produkt eintragen">
+    <button class="check">Prüfen</button>
+    <button class="secondary hintbtn">Hinweis</button>
+    <div class="hint">Beim Reformieren wird Wasserstoff abgespalten. Aus C₆H₁₄ wird C₆H₆ + ?</div>
+    <div class="result" aria-live="polite"></div>
+  </section>
+
+  <!-- A7: Erklären in einfachen Worten -->
+  <section class="card" data-task="a7">
+    <div class="task-title"><span class="badge">A7</span><h2>Kurz erklären (2–3 Sätze)</h2></div>
+    <p>Warum entfärbt Benzol Bromwasser <b>nicht schnell</b>, Cyclohexen aber schon? Erkläre sehr einfach.</p>
+    <textarea id="freeA7" rows="5" style="width:100%; padding:10px; border:1px solid #cfd8dc; border-radius:10px" placeholder="Deine Erklärung in einfachen Sätzen …"></textarea>
+    <div>
+      <button class="check">Selbstcheck</button>
+      <button class="secondary hintbtn">Formulierungshilfe</button>
+      <div class="hint">Cyclohexen hat eine <b>lokale</b> C=C-Doppelbindung → schnelle <b>Addition</b> von Brom (Entfärbung). Beim Benzol sind π-Elektronen <b>delokalisiert</b> (aromatische Stabilisierung) → keine schnelle Addition; Reaktion meist nur mit Katalysator/Substitution.</div>
+      <div class="result small muted">Deine Antwort wird gespeichert, aber hier gibt es kein „richtig/falsch“. Nutze die Hilfe und prüfe, ob du beides erwähnst: <i>Doppelbindung vs. delokalisiertes System</i>.</div>
+    </div>
+  </section>
+
+  <!-- Toolbar -->
+  <div class="card toolbar">
+    <button id="save" class="secondary" aria-label="Fortschritt lokal speichern">Speichern</button>
+    <button id="load" class="secondary">Fortsetzen</button>
+    <button id="reset" class="secondary">Zurücksetzen</button>
+    <details>
+      <summary>Lehrkraft: Lösungen einblenden</summary>
+      <div class="key small">
+        <ul>
+          <li><b>A1</b>: richtig = 1,3,4; falsch = 2,5</li>
+          <li><b>A2</b>: Benzol→b; Cyclohexen→a; Cyclohexan→c</li>
+          <li><b>A3</b>: richtig = 1,2,4; falsch = 3</li>
+          <li><b>A4</b>: Erwartung (starr) = <b>zwei</b>; Realität = <b>eins</b></li>
+          <li><b>A5</b>: richtig = 1,2,4; falsch = 3</li>
+          <li><b>A6</b>: Produkt = <b>Wasserstoff (H₂)</b>; bilanziert z. B. C₆H₁₄ → C₆H₆ + 4 H₂</li>
+          <li><b>A7</b>: Stichworte: Addition an C=C vs. aromatische Stabilisierung/Delokalisierung → keine schnelle Entfärbung.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+</main>
+
+<script>
+/* ---------- Hilfsfunktionen ---------- */
+const qs=(s,el=document)=>el.querySelector(s);
+const qsa=(s,el=document)=>[...el.querySelectorAll(s)];
+const storeKey="benzol_gkurs_q2_v1";
+
+function updateProgress(){
+  const tasks=qsa("section.card[data-task]");
+  let passed=0;
+  tasks.forEach(t=>{
+    if(t.dataset.ok==="1") passed++;
+  });
+  const bar=qs("#progressBar");
+  const txt=qs("#progressText");
+  const pct=Math.round(passed/tasks.length*100);
+  bar.style.width=pct+"%";
+  txt.textContent=`${passed} von ${tasks.length} Aufgaben bestanden.`;
+}
+
+/* ---------- Fakten Toggle ---------- */
+qs("#btnFacts").addEventListener("click",()=>{
+  const box=qs("#facts");
+  box.style.display=box.style.display==="block"?"none":"block";
+});
+
+/* ---------- Aufgabe A1, A3, A5 (MC) ---------- */
+qsa('[data-task="a1"], [data-task="a3"], [data-task="a5"]').forEach(sec=>{
+  const btn=qs(".check",sec);
+  const res=qs(".result",sec);
+  const hintbtn=qs(".hintbtn",sec);
+  hintbtn.addEventListener("click",()=>{ const h=qs(".hint",sec); h.style.display=h.style.display==="block"?"none":"block"; });
+
+  btn.addEventListener("click",()=>{
+    const boxes=qsa('input[type="checkbox"]',sec);
+    let ok=true;
+    boxes.forEach(b=>{
+      const should=b.dataset.key==="t";
+      const is=b.checked;
+      if(should!==is){ ok=false; }
+    });
+    if(ok){ res.innerHTML='<span class="ok">✔ Richtig!</span>'; sec.dataset.ok="1"; }
+    else{ res.innerHTML='<span class="bad">✖ Noch nicht. Prüfe Text & Steckbrief.</span>'; sec.dataset.ok="0"; }
+    updateProgress();
+  });
+});
+
+/* ---------- Aufgabe A2 (Tip-Match) ---------- */
+(function(){
+  const sec=qs('[data-task="a2"]');
+  const left=qsa('.pill[data-left]',sec);
+  const right=qsa('.pill[data-right]',sec);
+  const res=qs(".result",sec);
+  const pairsBox=qs("#pairsA2");
+  const correct={benzol:"b", cyclohexen:"a", cyclohexan:"c"};
+  let selectL=null, selectR=null;
+  let chosen={}; // left->right
+
+  function renderPairs(){
+    pairsBox.innerHTML = Object.keys(chosen).length
+      ? '<div class="pair"><b>Deine Paare:</b> '+
+        Object.entries(chosen).map(([l,r])=>`${l} → ${r}`).join(' | ')+'</div>'
+      : '<div class="pair muted">Noch keine Paare gewählt.</div>';
+  }
+
+  function toggle(el, group){
+    group.forEach(p=>p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  left.forEach(p=>p.addEventListener('click',()=>{
+    toggle(p,left); selectL=p.dataset.left;
+    if(selectL && selectR){ chosen[selectL]=selectR; left.forEach(x=>x.classList.remove('active')); right.forEach(x=>x.classList.remove('active')); selectL=null; selectR=null; renderPairs(); }
+  }));
+  right.forEach(p=>p.addEventListener('click',()=>{
+    toggle(p,right); selectR=p.dataset.right;
+    if(selectL && selectR){ chosen[selectL]=selectR; left.forEach(x=>x.classList.remove('active')); right.forEach(x=>x.classList.remove('active')); selectL=null; selectR=null; renderPairs(); }
+  }));
+  renderPairs();
+
+  qs(".hintbtn",sec).addEventListener("click",()=>{ const h=qs(".hint",sec); h.style.display=h.style.display==="block"?"none":"block"; });
+
+  qs(".check",sec).addEventListener("click",()=>{
+    const allL=['benzol','cyclohexen','cyclohexan'];
+    let ok=allL.every(k=>chosen[k]===correct[k]);
+    if(ok){ res.innerHTML='<span class="ok">✔ Alle Zuordnungen korrekt.</span>'; sec.dataset.ok="1";}
+    else{ res.innerHTML='<span class="bad">✖ Prüfe: Aromat vs. Alken vs. Alkan.</span>'; sec.dataset.ok="0";}
+    updateProgress();
+  });
+})();
+
+/* ---------- Aufgabe A4 (Isomere) ---------- */
+(function(){
+  const sec=qs('[data-task="a4"]');
+  const inputs=qsa('.gapin',sec);
+  const btn=qs(".check",sec);
+  const res=qs(".result",sec);
+  qs(".hintbtn",sec).addEventListener("click",()=>{ const h=qs(".hint",sec); h.style.display=h.style.display==="block"?"none":"block"; });
+
+  function norm(s){ return (s||'').toString().trim().toLowerCase().replaceAll(' ', ''); }
+
+  btn.addEventListener("click",()=>{
+    const v1=norm(inputs[0].value); // erwartung
+    const v2=norm(inputs[1].value); // real
+    const ok = (v1==='2' || v1==='zwei') && (v2==='1' || v2==='eins' || v2==='ein');
+    if(ok){ res.innerHTML='<span class="ok">✔ Korrekt: erwartet 2, real 1.</span>'; sec.dataset.ok="1"; }
+    else{ res.innerHTML='<span class="bad">✖ Tipp: Kekulé würde zwei Formen erlauben, real sind alle Bindungen gleichwertig → nur eins.</span>'; sec.dataset.ok="0"; }
+    updateProgress();
+  });
+})();
+
+/* ---------- Aufgabe A6 (Reformieren) ---------- */
+(function(){
+  const sec=qs('[data-task="a6"]');
+  const inp=qs('.gapin',sec);
+  const btn=qs(".check",sec);
+  const res=qs(".result",sec);
+  qs(".hintbtn",sec).addEventListener("click",()=>{ const h=qs(".hint",sec); h.style.display=h.style.display==="block"?"none":"block"; });
+
+  btn.addEventListener("click",()=>{
+    const v=inp.value.trim().toLowerCase();
+    const ok = ['h2','h₂','wasserstoff','molekularer wasserstoff','h2 '].some(x=>v===x);
+    if(ok){ res.innerHTML='<span class="ok">✔ Richtig: Wasserstoff (H₂). Bsp.: C₆H₁₄ → C₆H₆ + 4 H₂</span>'; sec.dataset.ok="1"; }
+    else{ res.innerHTML='<span class="bad">✖ Prüfe den Wasserstoffüberschuss in Hexan.</span>'; sec.dataset.ok="0"; }
+    updateProgress();
+  });
+})();
+
+/* ---------- Aufgabe A7 (Freitext) ---------- */
+(function(){
+  const sec=qs('[data-task="a7"]');
+  const ta=qs('#freeA7');
+  const btn=qs('.check',sec);
+  btn.addEventListener("click",()=>{
+    // Soft self-check: sucht Schlüsselwörter
+    const txt=ta.value.toLowerCase();
+    const hasAdd = /addit|brom/.test(txt);
+    const hasCdouble = /doppel|c=c|alken/.test(txt);
+    const hasArom = /aromat|delokali|resonanz/.test(txt);
+    const res=qs(".result",sec);
+    if(hasAdd && (hasCdouble || hasArom)){
+      res.innerHTML='<span class="ok">✔ Klingt gut. Du nennst die richtigen Ideen.</span>';
+      sec.dataset.ok="1";
+    }else{
+      res.innerHTML='<span class="bad">✖ Ergänze: Alken-Addition <i>und</i> aromatische Stabilisierung.</span>';
+      sec.dataset.ok="0";
+    }
+    updateProgress();
+  });
+})();
+
+/* ---------- Speichern / Laden / Reset ---------- */
+function gather(){
+  const data={};
+  qsa('section.card[data-task]').forEach(sec=>{
+    const id=sec.dataset.task;
+    if(['a1','a3','a5'].includes(id)){
+      data[id]=qsa('input[type="checkbox"]',sec).map(b=>b.checked?1:0);
+    } else if(id==='a2'){
+      data[id]=qs('#pairsA2').textContent;
+    } else if(id==='a4'){
+      data[id]=qsa('.gapin',sec).map(i=>i.value);
+    } else if(id==='a6'){
+      data[id]=qs('.gapin',sec).value;
+    } else if(id==='a7'){
+      data[id]=qs('#freeA7').value;
+    }
+    data[id+'_ok']=sec.dataset.ok||"0";
+  });
+  return data;
+}
+function apply(data){
+  if(!data) return;
+  const set=(arr,sec)=>qsa('input[type="checkbox"]',sec).forEach((b,i)=>b.checked=!!(arr[i]));
+  const sec1=qs('[data-task="a1"]'); if(data.a1) set(data.a1,sec1); if(data.a1_ok) sec1.dataset.ok=data.a1_ok;
+  const sec3=qs('[data-task="a3"]'); if(data.a3) set(data.a3,sec3); if(data.a3_ok) sec3.dataset.ok=data.a3_ok;
+  const sec5=qs('[data-task="a5"]'); if(data.a5) set(data.a5,sec5); if(data.a5_ok) sec5.dataset.ok=data.a5_ok;
+  const sec4=qs('[data-task="a4"]'); if(data.a4){ const ins=qsa('.gapin',sec4); ins[0].value=data.a4[0]||''; ins[1].value=data.a4[1]||'';} if(data.a4_ok) sec4.dataset.ok=data.a4_ok;
+  const sec6=qs('[data-task="a6"]'); if(data.a6) qs('.gapin',sec6).value=data.a6; if(data.a6_ok) sec6.dataset.ok=data.a6_ok;
+  const sec7=qs('[data-task="a7"]'); if(data.a7) qs('#freeA7',sec7).value=data.a7; if(data.a7_ok) sec7.dataset.ok=data.a7_ok;
+  updateProgress();
+}
+qs("#save").addEventListener("click",()=>{
+  localStorage.setItem(storeKey, JSON.stringify(gather()));
+  alert("Gespeichert. Du kannst später mit „Fortsetzen“ weitermachen.");
+});
+qs("#load").addEventListener("click",()=>{
+  const d=localStorage.getItem(storeKey);
+  if(!d){ alert("Keine gespeicherten Daten gefunden."); return; }
+  apply(JSON.parse(d));
+});
+qs("#reset").addEventListener("click",()=>{
+  if(confirm("Wirklich alles zurücksetzen?")){ localStorage.removeItem(storeKey); location.reload(); }
+});
+
+/* init */
+updateProgress();
+</script>
+</body>
+</html>
